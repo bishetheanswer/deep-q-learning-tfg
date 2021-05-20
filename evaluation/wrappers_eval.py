@@ -11,6 +11,8 @@ class ImageToPyTorch(gym.ObservationWrapper):
     """
     Transform the image format from HWC (Height, Width, Channel)
     to PyTorch format CHW (Channel, Height, Width)
+
+    Implementation: https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter06/lib/wrappers.py
     """
 
     def __init__(self, env):
@@ -25,17 +27,24 @@ class ImageToPyTorch(gym.ObservationWrapper):
 
 
 class ScaledFloatFrame(gym.ObservationWrapper):
+    """
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+
     def observation(self, obs):
         return np.array(obs).astype(np.float32) / 255.0
 
 
 class WarpFrame(gym.ObservationWrapper):
+    """
+    Warp frames to 84x84 as done in the Nature paper and later work.
+    If the environment uses dictionary observations, `dict_space_key` can be specified which indicates which
+    observation should be warped.
+
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+
     def __init__(self, env, width=84, height=84, grayscale=True, dict_space_key=None):
-        """
-        Warp frames to 84x84 as done in the Nature paper and later work.
-        If the environment uses dictionary observations, `dict_space_key` can be specified which indicates which
-        observation should be warped.
-        """
         super().__init__(env)
         self._width = width
         self._height = height
@@ -84,10 +93,14 @@ class WarpFrame(gym.ObservationWrapper):
 
 
 class NoopResetEnv(gym.Wrapper):
+    """
+    Sample initial states by taking random number of no-ops on reset.
+    No-op is assumed to be action 0.
+
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+
     def __init__(self, env, noop_max=30):
-        """Sample initial states by taking random number of no-ops on reset.
-        No-op is assumed to be action 0.
-        """
         gym.Wrapper.__init__(self, env)
         self.noop_max = noop_max
         self.override_num_noops = None
@@ -113,8 +126,13 @@ class NoopResetEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
+    """
+    Return only every `skip`-th frame
+        
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+    
     def __init__(self, env, skip=4, env_name="", rec=False):
-        """Return only every `skip`-th frame"""
         gym.Wrapper.__init__(self, env)
         # most recent raw observations (for max pooling across time steps)
         self._obs_buffer = np.zeros(
@@ -164,9 +182,8 @@ class FrameStack(gym.Wrapper):
     """
     Stack k last frames.
     Returns lazy array, which is much more memory efficient.
-    See Also
-    --------
-    baselines.common.atari_wrappers.LazyFrames
+    
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
 
     def __init__(self, env, k):
@@ -194,12 +211,15 @@ class FrameStack(gym.Wrapper):
 
 
 class LazyFrames(object):
+    """
+    This object ensures that common frames between the observations are only stored once.
+    It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay
+    buffers.
+        
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+
     def __init__(self, frames):
-        """This object ensures that common frames between the observations are only stored once.
-        It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay
-        buffers.
-        This object should only be converted to numpy array before being passed to the model.
-        You'd not believe how complex the previous solution was."""
         self._frames = frames
         self._out = None
 
@@ -232,9 +252,8 @@ class LazyFrames(object):
 class Discretizer(gym.ActionWrapper):
     """
     Wrap a gym environment and make it use discrete actions.
-    https://github.com/openai/retro/blob/master/retro/examples/discretizer.py
-    Args:
-        combos: ordered list of lists of valid button combinations
+        
+    Implementation: https://github.com/openai/retro/blob/master/retro/examples/discretizer.py
     """
 
     def __init__(self, env, combos):
@@ -356,25 +375,25 @@ class LifesWrapperV2(gym.Wrapper):
 
 
 class ClipRewardEnv(gym.RewardWrapper):
+    """
+    Bin reward to {+1, 0, -1} by its sign
+    Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+    """
+
     def __init__(self, env):
         gym.RewardWrapper.__init__(self, env)
 
     def reward(self, reward):
-        """Bin reward to {+1, 0, -1} by its sign."""
         return np.sign(reward)
 
 
 def make_retro(env_name, rec=False):
-    
     two_lives = ["StreetsOfRage2-Genesis"]
     three_lives = ["SonicTheHedgehog-Genesis", "RevengeOfShinobi-Genesis", "Flicky-Genesis"]
 
     env = retro.make(env_name)
-    
-    
-
     env = MaxAndSkipEnv(env, skip=5, env_name=env_name, rec=rec)
-
+    
     if env_name in three_lives:
         env = LifesWrapperV2(env)
     elif env_name in two_lives:
