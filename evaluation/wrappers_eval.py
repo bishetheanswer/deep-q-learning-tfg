@@ -28,6 +28,7 @@ class ImageToPyTorch(gym.ObservationWrapper):
 
 class ScaledFloatFrame(gym.ObservationWrapper):
     """
+    Convert bytes to float in range [0.0,1.0]
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
 
@@ -130,6 +131,8 @@ class MaxAndSkipEnv(gym.Wrapper):
     Return only every `skip`-th frame
         
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+
+    The implementation has been changed in order to record the game
     """
     
     def __init__(self, env, skip=4, env_name="", rec=False):
