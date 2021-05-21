@@ -29,6 +29,7 @@ class ImageToPyTorch(gym.ObservationWrapper):
 class ScaledFloatFrame(gym.ObservationWrapper):
     """
     Convert bytes to float in range [0.0,1.0]
+    
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
 
@@ -297,15 +298,6 @@ class DiscretizerV2(Discretizer):
 
 class DiscretizerV3(Discretizer):
     """
-    - Revenge of Shinobi
-    """
-
-    def __init__(self, env):
-        super().__init__(env=env, combos=[[], ['UP'], ['DOWN'], ['RIGHT'], ['UP', 'RIGHT'], ['DOWN', 'RIGHT'], ['DOWN', 'C'], ['A'], ['B'], ['C'], ['C', 'B']])
-
-
-class DiscretizerV4(Discretizer):
-    """
     - Columns
     """
 
@@ -313,16 +305,7 @@ class DiscretizerV4(Discretizer):
         super().__init__(env=env, combos=[[], ['LEFT'], ['DOWN'], ['RIGHT'], ['A']])
 
 
-class DiscretizerV5(Discretizer):
-    """
-    - Fatal Labyrinth
-    """
-
-    def __init__(self, env):
-        super().__init__(env=env, combos=[[], ['UP'], ['LEFT'], ['DOWN'], ['RIGHT'], ['A']])
-
-
-class DiscretizerV6(Discretizer):
+class DiscretizerV4(Discretizer):
     """
     - Flicky
     """
@@ -331,9 +314,9 @@ class DiscretizerV6(Discretizer):
         super().__init__(env=env, combos=[[], ['LEFT'], ['RIGHT'], ['A'], ['LEFT', 'A'], ['RIGHT', 'A']])
 
 
-class DiscretizerV7(Discretizer):
+class DiscretizerV5(Discretizer):
     """
-    - Bio-Hazard Battle
+    - BioHazardBattle
     """
 
     def __init__(self, env):
@@ -360,9 +343,10 @@ class LifesWrapperV1(gym.Wrapper):
 
 class LifesWrapperV2(gym.Wrapper):
     """
-    Make end-of-life == end-of-episode for games where lives == 2
+    Make end-of-life == end-of-episode for games where lives == 3
     - Sonic The Hedgehog
-    - Revenge of Shinobi
+    - Flicky
+    - BioHazardBattle
     """
 
     def __init__(self, env):
@@ -380,6 +364,7 @@ class LifesWrapperV2(gym.Wrapper):
 class ClipRewardEnv(gym.RewardWrapper):
     """
     Bin reward to {+1, 0, -1} by its sign
+    
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
 
@@ -406,16 +391,12 @@ def make_retro(env_name, rec=False):
         env = DiscretizerV1(env)
     elif env_name == "StreetsOfRage2-Genesis":
         env = DiscretizerV2(env)
-    elif env_name == "RevengeOfShinobi-Genesis":
-        env = DiscretizerV3(env)
     elif env_name == "Columns-Genesis":
-        env = DiscretizerV4(env)
-    elif env_name == "FatalLabyrinth-Genesis":
-        env = DiscretizerV5(env)
+        env = DiscretizerV3(env)
     elif env_name == "Flicky-Genesis":
-        env = DiscretizerV6(env)
+        env = DiscretizerV4(env)
     elif env_name == "BioHazardBattle-Genesis":
-        env = DiscretizerV7(env)
+        env = DiscretizerV5(env)
     
     env = NoopResetEnv(env, noop_max=30)
     env = WarpFrame(env)
