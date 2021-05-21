@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# Implementation based on:
+# --> https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter06/03_dqn_play.py
+
 import argparse
 import numpy as np
 import os

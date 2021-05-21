@@ -1,3 +1,6 @@
+# Implementation:
+# --> https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter06/lib/dqn_model.py
+
 import torch
 import torch.nn as nn
 import numpy as np
