@@ -24,28 +24,14 @@ Here is a video of the best agents playing:
 * Best agents: https://youtu.be/FoARRAapR_Y
 
 ## Tools
-<img src="http://www.securizame.com/wp-content/uploads/2016/05/Python-logo-notext.svg_.png" alt="drawing" width="150"/> 
-
-Python
 
 
-<img src="https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/pytorch-logo-dark.png" alt="drawing" width="400"/> 
+<img src="http://www.securizame.com/wp-content/uploads/2016/05/Python-logo-notext.svg_.png" alt="drawing" width="70"/><img src="https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/pytorch-logo-dark.png" alt="drawing" width="250"/> <img src="http://static1.squarespace.com/static/5e6be21d9b6785669d860a72/t/5fc3bb423c6ccf69f3d061a4/1606662982674/openai-logo-horizontal-gradient.jpg?format=1500w" width="150"/> <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Kaggle_logo.png" width="150"/>  <img src="https://img.icons8.com/color/452/google-cloud.png" width="100"/>  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1200px-Amazon_Web_Services_Logo.svg.png" width="100"/>  
 
-PyTorch
-
-<img src="http://static1.squarespace.com/static/5e6be21d9b6785669d860a72/t/5fc3bb423c6ccf69f3d061a4/1606662982674/openai-logo-horizontal-gradient.jpg?format=1500w" width="300"/> 
-
-OpenAI Gym Retro
-
-<img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Kaggle_logo.png" width="200"/>  
- 
- Kaggle was used at first to perform an informal search in order to select the final hyperparameters for training. The downside is that you are only able to execute a notebook for 9 hours straight so the final training could not be performed using Kaggle.
-
-
-<img src="https://img.icons8.com/color/452/google-cloud.png" width="200"/>  
-
-I used the Notebooks API from Google Cloud as an alternative to Kaggle but the notebooks stopped their execution after 24 hours.
-
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1200px-Amazon_Web_Services_Logo.svg.png" width="200"/>  
-The final training was performed in a laboratory of the Escuela Superior de Ingenieria Informática in Albacete. In order to receive the results of the training in my computer I used the S3 (Scalable Storage in cloud) service from AWS. I modified the traning algorithm in order to upload the results to the S3 AWS service.
+* Python 3.7.9
+* PyTorch 1.6.0
+* Gym Retro 0.8.0
+* Kaggle was used at first to perform an informal search in order to select the final hyperparameters for training. The downside is that you are only able to execute a notebook for 9 hours straight so the final training could not be performed using Kaggle.
+* I used the Notebooks API from Google Cloud as an alternative to Kaggle but the notebooks stopped their execution after 24 hours.
+* The final training was performed in a laboratory of the Escuela Superior de Ingenieria Informática in Albacete. In order to receive the results of the training in my computer I used the S3 (Scalable Storage in cloud) service from AWS. I modified the traning algorithm in order to upload the results to the S3 AWS service.
 
