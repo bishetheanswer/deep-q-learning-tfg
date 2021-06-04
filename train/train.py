@@ -24,6 +24,7 @@ EPS_DECAY = 100000
 TARGET_UPDATE_FREQUENCY = 2500
 LEARNING_RATE = 1e-4
 
+
 Transition = collections.namedtuple(
     'Transition', field_names=['state', 'action', 'reward', 'done',
                                'new_state'])
@@ -84,7 +85,7 @@ class Agent:
         return done_reward
 
 
-def calc_loss(batch, net, tgt_net, device):
+def calc_loss(batch, dqn_net, tgt_net, device):
     states, actions, rewards, dones, next_states = batch
     states_t = torch.tensor(np.array(states, copy=False)).to(device)
     actions_t = torch.tensor(actions).to(device)
@@ -92,16 +93,16 @@ def calc_loss(batch, net, tgt_net, device):
     done_mask = torch.BoolTensor(dones).to(device)
     next_states_t = torch.tensor(np.array(next_states, copy=False)).to(device)
 
-    state_action_values = net(states_t).gather(
+    q_values = dqn_net(states_t).gather(
         1, actions_t.unsqueeze(-1)).squeeze(-1)
     with torch.no_grad():
         next_state_values = tgt_net(next_states_t).max(1)[0]
         next_state_values[done_mask] = 0.0
         next_state_values = next_state_values.detach()
 
-    expected_state_action_values = next_state_values * GAMMA + rewards_t
-    return nn.MSELoss()(state_action_values,
-                        expected_state_action_values)
+    target_values = next_state_values * GAMMA + rewards_t
+    return nn.MSELoss()(q_values,
+                        target_values)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -111,20 +112,25 @@ if __name__ == "__main__":
     args = parser.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Initialize AWS client
     bucket = 'tfg-miguel-bucket'
     client = boto3.client('s3',
                             aws_access_key_id = access_key,
                             aws_secret_access_key = secret_access_key)
-
+    
+    # Create environment
     env = wrappers.make_retro(args.env)
-    net = model.DQN(env.observation_space.shape,
+    
+    # Initialize the neural networks
+    dqn_net = model.DQN(env.observation_space.shape,
                         env.action_space.n).to(device)
     tgt_net = model.DQN(env.observation_space.shape,
                             env.action_space.n).to(device)
+    
     buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
     agent = Agent(env, buffer)
     epsilon = EPS_START
-    optimizer = torch.optim.Adam(net.parameters(), lr=LEARNING_RATE)
+    optimizer = torch.optim.Adam(dqn_net.parameters(), lr=LEARNING_RATE)
     
     total_rewards = []
     total_m_rewards = []
@@ -137,9 +143,11 @@ if __name__ == "__main__":
     while True:
         step += 1
         epsilon = max(EPS_END, EPS_START - step / EPS_DECAY)
-        reward = agent.play_step(net, epsilon, device)
+        reward = agent.play_step(dqn_net, epsilon, device)
         
+        # when the episode is finished
         if reward is not None:
+            # append results and update variables
             total_rewards.append(reward)
             speed = (step - ts_step) / (time.time() - ts)
             total_duration.append(step - ts_step)
@@ -154,15 +162,18 @@ if __name__ == "__main__":
                       speed
                   ))
 
+        # Save the agent 
         if step % 250000 == 0:
-            torch.save(net.state_dict(), args.env +
+            torch.save(dqn_net.state_dict(), args.env +
                         "-steps_%d.dat" % (step))
             
+            # Upload agent to AWS S3
             for file in os.listdir():
                 if str(step) in file:
                     upload_key = args.env + '/' + str(file)
                     client.upload_file(file, bucket, upload_key)
-
+            
+            # When training is finished save results into .csv
             if step == N_STEPS:
                 np.savetxt('total_rewards.csv', total_rewards, delimiter=',')
                 np.savetxt('total_m_rewards.csv', total_m_rewards, delimiter=',')
@@ -170,19 +181,23 @@ if __name__ == "__main__":
                 np.savetxt('total_duration.csv', total_duration, delimiter=',')
                 print("Training completed!")
                 break
-            
+
+        # Skip gradient descent updates until the replay buffer has some transitions    
         if len(buffer) < REPLAY_START_SIZE:
             continue
 
+        # Update the target network with the dqn weights
         if step % TARGET_UPDATE_FREQUENCY == 0:
-            tgt_net.load_state_dict(net.state_dict())
+            tgt_net.load_state_dict(dqn_net.state_dict())
 
+        # Calculate the loss and perform gradient descent step
         optimizer.zero_grad()
         batch = buffer.sample(BATCH_SIZE)
-        loss = calc_loss(batch, net, tgt_net, device)
+        loss = calc_loss(batch, dqn_net, tgt_net, device)
         loss.backward()
         optimizer.step()
     
+    # Upload .csv to AWS S3
     for file in os.listdir():
         if '.csv' in file:
             upload_key = args.env + '/' + str(file)
