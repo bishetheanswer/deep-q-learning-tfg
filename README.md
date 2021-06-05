@@ -3,6 +3,11 @@
 # Deep Reinforcement Learning applied to retro videogames
 
 ## Training
+Inside the train folder you can find the following files:
+* `train.py`: code for training DQN agents.
+* `model.py`: the implementation of the DQN architecture.
+* `wrappers.py`: wrappers applied to the environment when training.
+* `keys.py`: file where the AWS keys are stored.
 
 ## Evaluation
 Inside the evaluation folder you can find the following files:
