@@ -1,14 +1,16 @@
 import collections
 import numpy as np
+import argparse
+import time
+import os
+
 import torch
 import torch.nn as nn
-import argparse
 import wrappers
 import model
-import time
+
 from keys import access_key, secret_access_key
 import boto3
-import os
 
 
 # Hyperparameters
@@ -41,6 +43,7 @@ class ReplayBuffer:
         self.buffer.append(transition)
 
     def sample(self, batch_size):
+        """Samples a batch of experiences"""
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
         states, actions, rewards, dones, next_states = zip(
             *[self.buffer[idx] for idx in indices])
@@ -64,6 +67,7 @@ class Agent:
     def play_step(self, net, epsilon, device):
         done_reward = None
 
+        # e-greedy policy
         if np.random.random() < epsilon:
             action = env.action_space.sample()
         else:
@@ -87,6 +91,8 @@ class Agent:
 
 def calc_loss(batch, dqn_net, tgt_net, device):
     states, actions, rewards, dones, next_states = batch
+
+    # Wrap data into PyTorch tensors
     states_t = torch.tensor(np.array(states, copy=False)).to(device)
     actions_t = torch.tensor(actions).to(device)
     rewards_t = torch.tensor(rewards).to(device)
@@ -97,7 +103,7 @@ def calc_loss(batch, dqn_net, tgt_net, device):
         1, actions_t.unsqueeze(-1)).squeeze(-1)
     with torch.no_grad():
         next_state_values = tgt_net(next_states_t).max(1)[0]
-        next_state_values[done_mask] = 0.0
+        next_state_values[done_mask] = 0.0  # Mask for terminal states
         next_state_values = next_state_values.detach()
 
     target_values = next_state_values * GAMMA + rewards_t
@@ -121,7 +127,7 @@ if __name__ == "__main__":
     # Create environment
     env = wrappers.make_retro(args.env)
     
-    # Initialize the neural networks
+    # Initialize neural networks
     dqn_net = model.DQN(env.observation_space.shape,
                         env.action_space.n).to(device)
     tgt_net = model.DQN(env.observation_space.shape,
@@ -145,9 +151,9 @@ if __name__ == "__main__":
         epsilon = max(EPS_END, EPS_START - step / EPS_DECAY)
         reward = agent.play_step(dqn_net, epsilon, device)
         
-        # when the episode is finished
+        # When the episode is finished
         if reward is not None:
-            # append results and update variables
+            # Append results and update variables
             total_rewards.append(reward)
             speed = (step - ts_step) / (time.time() - ts)
             total_duration.append(step - ts_step)
@@ -162,7 +168,7 @@ if __name__ == "__main__":
                       speed
                   ))
 
-        # Save the agent 
+        # Save agent 
         if step % 250000 == 0:
             torch.save(dqn_net.state_dict(), args.env +
                         "-steps_%d.dat" % (step))
@@ -190,7 +196,7 @@ if __name__ == "__main__":
         if step % TARGET_UPDATE_FREQUENCY == 0:
             tgt_net.load_state_dict(dqn_net.state_dict())
 
-        # Calculate the loss and perform gradient descent step
+        # Sample experiences, calculate the loss and perform optimization step
         optimizer.zero_grad()
         batch = buffer.sample(BATCH_SIZE)
         loss = calc_loss(batch, dqn_net, tgt_net, device)
