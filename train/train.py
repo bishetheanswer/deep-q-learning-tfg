@@ -1,3 +1,7 @@
+# Implementation based on:
+# --> https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter06/02_dqn_pong.py
+# --> https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+
 import collections
 import numpy as np
 import argparse
@@ -64,7 +68,7 @@ class Agent:
         self.episode_reward = 0.0
 
     @torch.no_grad()
-    def play_step(self, net, epsilon, device):
+    def play_step(self, dqn_net, epsilon, device):
         done_reward = None
 
         # e-greedy policy
@@ -73,7 +77,7 @@ class Agent:
         else:
             state_a = np.array([self.state], copy=False)
             state_t = torch.tensor(state_a).to(device)
-            q_values = net(state_t)
+            q_values = dqn_net(state_t)
             _, act_idx = torch.max(q_values, dim=1)
             action = int(act_idx.item())
 
@@ -92,7 +96,7 @@ class Agent:
 def calc_loss(batch, dqn_net, tgt_net, device):
     states, actions, rewards, dones, next_states = batch
 
-    # Wrap data into PyTorch tensors
+    # Wraps data into PyTorch tensors
     states_t = torch.tensor(np.array(states, copy=False)).to(device)
     actions_t = torch.tensor(actions).to(device)
     rewards_t = torch.tensor(rewards).to(device)
@@ -108,8 +112,7 @@ def calc_loss(batch, dqn_net, tgt_net, device):
         next_q_values = next_q_values.detach()
 
     target_values = next_q_values * GAMMA + rewards_t
-    return nn.MSELoss()(q_values,
-                        target_values)
+    return nn.MSELoss()(q_values, target_values)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
