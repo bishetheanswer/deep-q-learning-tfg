@@ -14,7 +14,7 @@ import boto3
 
 
 # Hyperparameters
-N_STEPS = 5000000
+N_STEPS = 3000000
 DEFAULT_ENV_NAME = 'SonicTheHedgehog-Genesis'
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -101,12 +101,13 @@ def calc_loss(batch, dqn_net, tgt_net, device):
 
     q_values = dqn_net(states_t).gather(
         1, actions_t.unsqueeze(-1)).squeeze(-1)
-    with torch.no_grad():
-        next_state_values = tgt_net(next_states_t).max(1)[0]
-        next_state_values[done_mask] = 0.0  # Mask for terminal states
-        next_state_values = next_state_values.detach()
 
-    target_values = next_state_values * GAMMA + rewards_t
+    with torch.no_grad():
+        next_q_values = tgt_net(next_states_t).max(1)[0]
+        next_q_values[done_mask] = 0.0  # Mask for terminal states
+        next_q_values = next_q_values.detach()
+
+    target_values = next_q_values * GAMMA + rewards_t
     return nn.MSELoss()(q_values,
                         target_values)
 
@@ -132,7 +133,7 @@ if __name__ == "__main__":
                         env.action_space.n).to(device)
     tgt_net = model.DQN(env.observation_space.shape,
                             env.action_space.n).to(device)
-    
+
     buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
     agent = Agent(env, buffer)
     epsilon = EPS_START
@@ -145,7 +146,8 @@ if __name__ == "__main__":
     step = 0
     ts_step = 0
     ts = time.time()
-    
+    print('Training started:')
+
     while True:
         step += 1
         epsilon = max(EPS_END, EPS_START - step / EPS_DECAY)
@@ -176,19 +178,15 @@ if __name__ == "__main__":
             # Upload agent to AWS S3
             for file in os.listdir():
                 if str(step) in file:
-                    upload_key = args.env + '/' + str(file)
+                    upload_key = args.env + 'SMALL' + '/' + str(file)
                     client.upload_file(file, bucket, upload_key)
             
-            # When training is finished save results into .csv
+            # When training is finished exit the loop
             if step == N_STEPS:
-                np.savetxt('total_rewards.csv', total_rewards, delimiter=',')
-                np.savetxt('total_m_rewards.csv', total_m_rewards, delimiter=',')
-                np.savetxt('total_steps.csv', total_steps, delimiter=',')
-                np.savetxt('total_duration.csv', total_duration, delimiter=',')
                 print("Training completed!")
                 break
 
-        # Skip gradient descent updates until the replay buffer has some transitions    
+        # Skip gradient updates until the replay buffer has some transitions    
         if len(buffer) < REPLAY_START_SIZE:
             continue
 
@@ -203,9 +201,15 @@ if __name__ == "__main__":
         loss.backward()
         optimizer.step()
     
-    # Upload .csv to AWS S3
+    # Save results
+    np.savetxt('total_rewards.csv', total_rewards, delimiter=',')
+    np.savetxt('total_m_rewards.csv', total_m_rewards, delimiter=',')
+    np.savetxt('total_steps.csv', total_steps, delimiter=',')
+    np.savetxt('total_duration.csv', total_duration, delimiter=',')
+    
+    # Upload results to AWS S3
     for file in os.listdir():
         if '.csv' in file:
-            upload_key = args.env + '/' + str(file)
+            upload_key = args.env + 'SMALL' + '/' + str(file)
             client.upload_file(file, bucket, upload_key)
 
