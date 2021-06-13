@@ -5,14 +5,21 @@ Miguel Enrique Játiva Jiménez
 
 ## Training
 Inside the train folder you can find the following files:
-* `train.py`: code for training DQN agents.
+* `train.py`: code for training DQN agents. It takes as argument the name of the environment.
 * `model.py`: the implementation of the DQN architecture.
 * `wrappers.py`: wrappers applied to the environment when training.
 * `keys.py`: file where the AWS keys are stored.
 
+*Names of the environments:*
+* Columns-Genesis
+* Flicky-Genesis
+* BioHazardBattle-Genesis
+* StreetsOfRage2-Genesis
+* SonicTheHedgehog-Genesis
+
 ## Evaluation
 Inside the evaluation folder you can find the following files:
-* `eval.py`: code for evaluating DQN agents.
+* `eval.py`: code for evaluating DQN agents. It takes as arguments the agent, the name of the environment and whether you want to record it or not. 
 * `random_eval.py`: code for evaluating random agents.
 * `model.py`: the implementation of the DQN architecture.
 * `wrappers_eval.py`: wrappers applied to the environment when evaluating.
