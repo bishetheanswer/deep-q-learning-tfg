@@ -25,9 +25,9 @@ if __name__ == "__main__":
     env = wrappers.make_retro(args.env, args.record)
 
     # load agent
-    net = model.DQN(env.observation_space.shape, env.action_space.n)
+    dqn_net = model.DQN(env.observation_space.shape, env.action_space.n)
     state = torch.load(args.model, map_location=lambda stg, _: stg)
-    net.load_state_dict(state)
+    dqn_net.load_state_dict(state)
     
     total_reward = 0.0
     
@@ -42,7 +42,7 @@ if __name__ == "__main__":
                 action = env.action_space.sample()
             else:
                 state_v = torch.tensor(np.array([state], copy=False))
-                q_vals = net(state_v).data.numpy()[0]
+                q_vals = dqn_net(state_v).data.numpy()[0]
                 action = np.argmax(q_vals)
             
             state, reward, done, _ = env.step(action)
