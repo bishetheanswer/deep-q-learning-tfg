@@ -1,6 +1,7 @@
 <img src="https://www.esiiab.uclm.es/TallerProgramacionYRoboticaESII/Code.org_files/logomarca%201%20UCLM%20color.jpg" alt="drawing" width="150"/>
 
-# Deep Reinforcement Learning applied to retro videogames
+# Study of deep reinforcement learning approach and its application to the programming of intelligent agents to play retro video games
+Miguel Enrique Játiva Jiménez
 
 ## Training
 Inside the train folder you can find the following files:
