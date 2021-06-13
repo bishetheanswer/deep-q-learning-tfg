@@ -64,7 +64,7 @@ class Agent:
         self._reset()
 
     def _reset(self):
-        self.state = env.reset()
+        self.state = env.reset()  # initial state
         self.episode_reward = 0.0
 
     @torch.no_grad()
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             # Upload agent to AWS S3
             for file in os.listdir():
                 if str(step) in file:
-                    upload_key = args.env + 'SMALL' + '/' + str(file)
+                    upload_key = args.env + '/' + str(file)
                     client.upload_file(file, bucket, upload_key)
             
             # When training is finished exit the loop
@@ -213,6 +213,6 @@ if __name__ == "__main__":
     # Upload results to AWS S3
     for file in os.listdir():
         if '.csv' in file:
-            upload_key = args.env + 'SMALL' + '/' + str(file)
+            upload_key = args.env + '/' + str(file)
             client.upload_file(file, bucket, upload_key)
 

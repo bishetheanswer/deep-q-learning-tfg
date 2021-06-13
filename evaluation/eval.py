@@ -8,6 +8,8 @@ import torch
 import wrappers_eval as wrappers
 import model
 
+N_EPISODES = 10
+EPSILON = 0.05
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -31,18 +33,18 @@ if __name__ == "__main__":
     
     total_reward = 0.0
     
-    for i in range(10):
-        state = env.reset()
+    for i in range(N_EPISODES):
+        state = env.reset()  # initial state
         episode_reward = 0.0
         while True:
             env.render()
             
             # e-greedy policy
-            if np.random.random() < 0.05:
+            if np.random.random() < EPSILON:
                 action = env.action_space.sample()
             else:
-                state_v = torch.tensor(np.array([state], copy=False))
-                q_vals = dqn_net(state_v).data.numpy()[0]
+                state_t = torch.tensor(np.array([state], copy=False))
+                q_vals = dqn_net(state_t).data.numpy()[0]
                 action = np.argmax(q_vals)
             
             state, reward, done, _ = env.step(action)
@@ -54,5 +56,5 @@ if __name__ == "__main__":
         print('Reward in episode %d --> %.1f' % (i+1, episode_reward))
         total_reward += episode_reward     
     
-    print('Average reward --> %.1f' % (total_reward/10))
+    print('Average reward --> %.1f' % (total_reward/N_EPISODES))
 

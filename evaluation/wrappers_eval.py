@@ -9,7 +9,7 @@ from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 class ImageToPyTorch(gym.ObservationWrapper):
     """
-    Transform the image format from HWC (Height, Width, Channel)
+    Transforms the image format from HWC (Height, Width, Channel)
     to PyTorch format CHW (Channel, Height, Width)
 
     Implementation: https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter06/lib/wrappers.py
@@ -28,7 +28,7 @@ class ImageToPyTorch(gym.ObservationWrapper):
 
 class ScaledFloatFrame(gym.ObservationWrapper):
     """
-    Convert bytes to float in range [0.0,1.0]
+    Converts bytes to float in range [0.0,1.0]
     
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
@@ -39,9 +39,7 @@ class ScaledFloatFrame(gym.ObservationWrapper):
 
 class WarpFrame(gym.ObservationWrapper):
     """
-    Warp frames to 84x84 as done in the Nature paper and later work.
-    If the environment uses dictionary observations, `dict_space_key` can be specified which indicates which
-    observation should be warped.
+    Warps frames to 84x84 as done in the Nature paper and later work.
 
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
@@ -96,7 +94,7 @@ class WarpFrame(gym.ObservationWrapper):
 
 class NoopResetEnv(gym.Wrapper):
     """
-    Sample initial states by taking random number of no-ops on reset.
+    Samples initial states by taking random number of no-ops on reset.
     No-op is assumed to be action 0.
 
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
@@ -129,7 +127,7 @@ class NoopResetEnv(gym.Wrapper):
 
 class MaxAndSkipEnv(gym.Wrapper):
     """
-    Return only every `skip`-th frame
+    Returns only every `skip`-th frame
         
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
 
@@ -184,8 +182,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 class FrameStack(gym.Wrapper):
     """
-    Stack k last frames.
-    Returns lazy array, which is much more memory efficient.
+    Stacks k last frames.
     
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
@@ -217,8 +214,7 @@ class FrameStack(gym.Wrapper):
 class LazyFrames(object):
     """
     This object ensures that common frames between the observations are only stored once.
-    It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay
-    buffers.
+    It exists purely to optimize memory usage.
         
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
@@ -255,7 +251,7 @@ class LazyFrames(object):
 
 class Discretizer(gym.ActionWrapper):
     """
-    Wrap a gym environment and make it use discrete actions.
+    Wraps a gym environment and makes it use discrete actions.
         
     Implementation: https://github.com/openai/retro/blob/master/retro/examples/discretizer.py
     """
@@ -316,7 +312,7 @@ class DiscretizerV4(Discretizer):
 
 class DiscretizerV5(Discretizer):
     """
-    - BioHazardBattle
+    - Bio-Hazard Battle
     """
 
     def __init__(self, env):
@@ -325,7 +321,7 @@ class DiscretizerV5(Discretizer):
 
 class LifesWrapperV1(gym.Wrapper):
     """
-    Make end-of-life == end-of-episode for games where lives == 2
+    Makes end-of-life == end-of-episode for games where lives == 2
     - Streets of Rage 2
     """
 
@@ -343,10 +339,10 @@ class LifesWrapperV1(gym.Wrapper):
 
 class LifesWrapperV2(gym.Wrapper):
     """
-    Make end-of-life == end-of-episode for games where lives == 3
+    Makes end-of-life == end-of-episode for games where lives == 3
     - Sonic The Hedgehog
     - Flicky
-    - BioHazardBattle
+    - Bio-Hazard Battle
     """
 
     def __init__(self, env):
@@ -363,7 +359,7 @@ class LifesWrapperV2(gym.Wrapper):
 
 class ClipRewardEnv(gym.RewardWrapper):
     """
-    Bin reward to {+1, 0, -1} by its sign
+    Bins reward to {+1, 0, -1} by its sign
     
     Implementation: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     """
@@ -379,7 +375,10 @@ def make_retro(env_name, rec=False):
     two_lives = ["StreetsOfRage2-Genesis"]
     three_lives = ["SonicTheHedgehog-Genesis", "RevengeOfShinobi-Genesis", "Flicky-Genesis"]
 
+    # Create environment
     env = retro.make(env_name)
+
+    # Apply wrappers
     env = MaxAndSkipEnv(env, skip=5, env_name=env_name, rec=rec)
     
     if env_name in three_lives:
